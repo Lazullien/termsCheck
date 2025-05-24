@@ -39,7 +39,7 @@ function App() {
       const response = await axios.post('http://server.tsxc.xyz:8000/api/get_mcq/', null, {
         params: {
           question: statement,
-          session_id: 1
+          session_id: getCookieValue('session_id');
         }
       });
       
@@ -142,7 +142,7 @@ function App() {
           answer: JSON.stringify({
             user_paraphrase: userInput
           }),
-          session_id: 1
+          session_id: getCookieValue('session_id')
         }
       });
 
