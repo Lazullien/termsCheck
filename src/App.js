@@ -16,6 +16,7 @@ import axios from 'axios';
 import ThemeInput from './ThemeInput';
 import TermsDisplay from './TermsDisplay';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
+import { getCookieValue } from './utils';
 
 function App() {
   const [open, setOpen] = useState(false);
@@ -39,7 +40,7 @@ function App() {
       const response = await axios.post('http://server.tsxc.xyz:8000/api/get_mcq/', null, {
         params: {
           question: statement,
-          session_id: getCookieValue('session_id');
+          session_id: getCookieValue('session_id')
         }
       });
       
@@ -57,53 +58,64 @@ function App() {
 
   const handleThemeGenerated = async (content) => {
     try {
-      // Parse statements and pre-load MCQs
-      const parsedContent = JSON.parse(content);
-      const statements = parsedContent.response.list_answer_content;
-      const numQuestions = statements.length < 3 ? statements.length : 3;
       
-      // Pre-load MCQs for statements 2 and 3 if they exist
-      const mcqs = [];
-      let loadingSuccessful = true;
 
-      if (numQuestions >= 2) {
-        const mcq2 = await loadMultipleChoiceQuestion(statements[1]);
-        if (mcq2) {
-          mcqs[2] = mcq2;
-        } else {
-          loadingSuccessful = false;
-        }
-      }
+      // Parse statements and set them, enabling the button
+      const parsedContent = JSON.parse(content);
+      const originalStatements = parsedContent.response.list_answer_content;
+      console.log(originalStatements);
+      // Calculate actual number of runnable tests
+      let runnableTestsCount = originalStatements.length>3?3:originalStatements.length;
+      setTotalQuestions(runnableTestsCount);
+
+      setStatements(originalStatements);
+      setSampleContent(content); // Enables the button via disabled={!sampleContent}
+
+      // Determine potential number of tests based on statements
+      const numPotentialTests = originalStatements.length < 3 ? originalStatements.length : 3;
       
-      if (numQuestions >= 3 && loadingSuccessful) {
-        const mcq3 = await loadMultipleChoiceQuestion(statements[2]);
-        if (mcq3) {
-          mcqs[3] = mcq3;
-        } else {
-          loadingSuccessful = false;
-        }
-      }
-      
-      // Only update state if all required MCQs were loaded successfully
-      if (loadingSuccessful) {
-        setStatements(statements);
-        setPreloadedMCQs(mcqs);
-        setSampleContent(content);
+      const mcqPromises = [];
+      const newPreloadedMCQs = []; // Holds successfully loaded MCQ data, indexed by test number (2 or 3)
+
+      // Add promise for Test 2 MCQ (from originalStatements[1])
+      if (numPotentialTests >= 2 && originalStatements[1]) {
+        mcqPromises.push(loadMultipleChoiceQuestion(originalStatements[1]));
       } else {
-        throw new Error('Failed to load multiple choice questions');
+        mcqPromises.push(Promise.resolve(undefined)); // Placeholder if not needed or statement missing
       }
+
+      // Add promise for Test 3 MCQ (from originalStatements[2])
+      if (numPotentialTests >= 3 && originalStatements[2]) {
+        mcqPromises.push(loadMultipleChoiceQuestion(originalStatements[2]));
+      } else {
+        mcqPromises.push(Promise.resolve(undefined)); // Placeholder if not needed or statement missing
+      }
+
+      // Concurrently fetch data for Test 2 and Test 3 MCQs
+      const [mcqDataForTest2, mcqDataForTest3] = await Promise.all(mcqPromises);
+
+      if (mcqDataForTest2) {
+        newPreloadedMCQs[2] = mcqDataForTest2;
+      }
+      if (mcqDataForTest3) {
+        newPreloadedMCQs[3] = mcqDataForTest3;
+      }
+      
+      setPreloadedMCQs(newPreloadedMCQs);
+
       
     } catch (error) {
-      console.error('Error pre-loading MCQs:', error);
-      // Reset states in case of error
+      console.error('Error processing theme or loading MCQs:', error.message);
+      // Reset states in case of error during initial processing or critical MCQ failure
       setSampleContent('');
       setStatements([]);
       setPreloadedMCQs([]);
+      setTotalQuestions(0);
     }
   };
 
   const handleOpen = () => {
-    if (!sampleContent) return;
+    if (!sampleContent) return; // Guard remains, if sampleContent is empty (e.g. due to error in handleThemeGenerated), don't open
     
     setOpen(true);
     setVerificationError(false);
@@ -111,11 +123,8 @@ function App() {
     setCurrentTest(1);
     setCompletedTests([]);
     
-    let finalStatements = [];
-    finalStatements = JSON.parse(sampleContent).response.list_answer_content;
-    
-    setStatements(finalStatements);
-    setTotalQuestions(finalStatements.length < 3 ? finalStatements.length : 3);
+    // totalQuestions is now authoritatively set by handleThemeGenerated
+    // No need to re-calculate or set statements here as they are already set
   };
 
   const handleClose = () => {
@@ -145,6 +154,11 @@ function App() {
           session_id: getCookieValue('session_id')
         }
       });
+
+      // Wait for MCQloading to be false
+      while (totalQuestions>1&&!preloadedMCQs[0]) {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Check every 100ms
+      }
 
       const result = JSON.parse(response.data);
       if (result.response.match) {
