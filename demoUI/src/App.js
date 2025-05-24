@@ -37,34 +37,12 @@ function App() {
     setUserInput('');
     setCurrentTest(1);
     setCompletedTests([]);
-    
-    try {
-      const response = await axios.post('http://server.tsxc.xyz:8000/api/get_question', null, {
-        params: {
-          message_content: sampleContent,
-          number: 3,
-          session_id: 1
-        }
-      });
+
       
       let finalStatements = [];
-      if (response.data) {
-        try {
-          finalStatements = JSON.parse(response.data).response.list_answer_content;
-        } catch (parseError) {
-          console.error('Error parsing response:', parseError);
-        }
-      }
+      finalStatements = JSON.parse(sampleContent).response.list_answer_content;
       
       setStatements(finalStatements);
-    } catch (error) {
-      console.error('API Error:', error);
-      setStatements([
-        "第一个测试声明",
-        "第二个测试声明",
-        "第三个测试声明"
-      ]);
-    }
   };
 
   const handleClose = () => {
