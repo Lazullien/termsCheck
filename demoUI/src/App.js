@@ -24,6 +24,7 @@ function App() {
   const [statements, setStatements] = useState([]);
   const [completedTests, setCompletedTests] = useState([]);
   const [sampleContent, setSampleContent] = useState('');
+  const [totalQuestions, setTotalQuestions] = useState(0);
 
   const handleThemeGenerated = (content) => {
     setSampleContent(content);
@@ -37,12 +38,12 @@ function App() {
     setUserInput('');
     setCurrentTest(1);
     setCompletedTests([]);
-
-      
-      let finalStatements = [];
-      finalStatements = JSON.parse(sampleContent).response.list_answer_content;
-      
-      setStatements(finalStatements);
+    
+    let finalStatements = [];
+    finalStatements = JSON.parse(sampleContent).response.list_answer_content;
+    
+    setStatements(finalStatements);
+    setTotalQuestions(finalStatements.length < 3 ? finalStatements.length : 3);
   };
 
   const handleClose = () => {
@@ -72,7 +73,7 @@ function App() {
       if (result.response.match) {
         setCompletedTests(prev => [...prev, currentTest]);
         setUserInput('');
-        if (currentTest < 3) {
+        if (currentTest < totalQuestions) {
           setCurrentTest(prev => prev + 1);
         }
       } else {
@@ -85,7 +86,7 @@ function App() {
     setLoading(false);
   };
 
-  const allTestsPassed = completedTests.length === 3;
+  const allTestsPassed = completedTests.length === totalQuestions;
 
   return (
     <Box sx={{ 
@@ -161,7 +162,7 @@ function App() {
       >
         <DialogTitle sx={{ pb: 1, pt: 2 }}>
           <Typography variant="subtitle1">
-            Verification Test {currentTest} of 3
+            Verification Test {currentTest} of {totalQuestions}
           </Typography>
         </DialogTitle>
         <DialogContent sx={{ pb: 1 }}>
@@ -169,7 +170,7 @@ function App() {
             <>
               <LinearProgress 
                 variant="determinate" 
-                value={(completedTests.length / 3) * 100} 
+                value={(completedTests.length / totalQuestions) * 100} 
                 sx={{ mb: 1 }}
               />
               <Typography variant="body2" sx={{ mb: 1, fontSize: '0.875rem' }}>
