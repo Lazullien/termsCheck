@@ -14,20 +14,20 @@ const ThemeInput = ({ onThemeGenerated }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleThemeSubmit = async () => {
-    if (!theme) return;
+    if (!theme || isLoading) return;
     
     setIsLoading(true);
     try {
       const response = await axios.post('http://server.tsxc.xyz:8000/api/questions', null, {
         params: {
           message_request: theme,
-            message_content: SAMPLE_CONTENT,
-            session_id: 1
+          message_content: SAMPLE_CONTENT,
+          session_id: 1
         }
       });
       
       if (response.data) {
-        onThemeGenerated(response.data);
+        await onThemeGenerated(response.data);
       }
     } catch (error) {
       console.error('Error generating theme content:', error);
@@ -56,7 +56,7 @@ const ThemeInput = ({ onThemeGenerated }) => {
         disabled={!theme || isLoading}
         sx={{ width: '100%', mb: 2 }}
       >
-        {isLoading ? 'Generating...' : 'Set Theme'}
+        {isLoading ? 'Loading... (Please be patient)' : 'Set Theme'}
       </Button>
     </Box>
   );
