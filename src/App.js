@@ -207,11 +207,6 @@ function App() {
         session_id: getCookieValue('session_id')
       });
 
-      // Wait for MCQloading to be false
-      while (totalQuestions>1&&!preloadedMCQs[0]) {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Check every 100ms
-      }
-
       const result = JSON.parse(response.data);
       if (result.response.match) {
         setCompletedTests(prev => [...prev, currentTest]);
