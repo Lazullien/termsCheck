@@ -201,155 +201,51 @@ function App() {
   return (
     <Box sx={{ 
       minHeight: '100vh', 
+      width: '100vw',
       display: 'flex', 
       flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      bgcolor: '#f5f5f5'
+      bgcolor: '#ffffff'
     }}>
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          p: 2,
-          width: 'auto', 
-          maxWidth: '400px',
-          minHeight: '500px',
-          borderRadius: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 0.5
-        }}
-      >
-        <Typography 
-          variant="h6" 
+      <Box sx={{ 
+        p: 2,
+        flex: 1,
+        width: '100%',
+        fontSize: '1rem',
+        lineHeight: 1.6,
+        whiteSpace: 'pre-wrap'
+      }}>
+        {SAMPLE_CONTENT}
+      </Box>
+        
+      <Box sx={{ 
+        borderTop: '1px solid rgba(0,0,0,0.1)',
+        p: 3,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        bgcolor: '#ffffff'
+      }}>
+        <ThemeInput onThemeGenerated={handleThemeGenerated} />
+
+        <Button 
+          variant="contained" 
+          onClick={handleOpen}
+          disabled={!sampleContent}
           sx={{ 
-            fontSize: '1.1rem',
-            mb: 0,
-            textAlign: 'center',
-            color: '#000000'
+            width: '200px',
+            height: '36px',
+            textTransform: 'none',
+            fontSize: '0.9rem',
+            borderRadius: '4px',
+            bgcolor: sampleContent ? '#1976d2' : '#9e9e9e',
+            '&:hover': {
+              bgcolor: sampleContent ? '#1565c0' : '#9e9e9e'
+            }
           }}
         >
-          Please read the following terms and answer questions:
-        </Typography>
-
-        <TermsDisplay content={SAMPLE_CONTENT} />
-        
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 'auto' }}>
-          <ThemeInput onThemeGenerated={handleThemeGenerated} />
-
-          <Button 
-            variant="contained" 
-            onClick={handleOpen}
-            disabled={!sampleContent}
-            sx={{ 
-              width: '100%',
-              maxWidth: '300px',
-              height: '48px',
-              textTransform: 'none',
-              fontSize: '0.95rem',
-              borderRadius: '4px',
-              bgcolor: sampleContent ? '#1976d2' : '#9e9e9e',
-              '&:hover': {
-                bgcolor: sampleContent ? '#1565c0' : '#9e9e9e'
-              },
-              alignSelf: 'center',
-              mt: 0.5
-            }}
-          >
-            Begin Test
-          </Button>
-        </Box>
-      </Paper>
-
-      <Dialog
-        open={open} 
-        onClose={handleClose}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{
-          sx: {
-            maxHeight: '80vh',
-            minHeight: '500px'
-          }
-        }}
-      >
-        <DialogTitle sx={{ pb: 1, pt: 2 }}>
-          <Typography variant="subtitle1">
-            Verification Test {currentTest} of {totalQuestions}
-          </Typography>
-        </DialogTitle>
-        <DialogContent sx={{ pb: 1, overflowY: 'auto' }}>
-          {currentTest > 0 && !allTestsPassed && (
-            <>
-              <LinearProgress 
-                variant="determinate" 
-                value={(completedTests.length / totalQuestions) * 100} 
-                sx={{ mb: 2 }}
-              />
-              {currentTest === 1 ? (
-                <>
-                  <Typography variant="body2" sx={{ mb: 1, fontSize: '0.875rem' }}>
-                    Please paraphrase (may take time to load):
-                  </Typography>
-                  <Box sx={{ mb: 1, pl: 1 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
-                      {statements[currentTest - 1]}
-                    </Typography>
-                  </Box>
-                  <TextField
-                    autoFocus
-                    size="small"
-                    margin="dense"
-                    label="Your Paraphrase"
-                    fullWidth
-                    multiline
-                    rows={4}
-                    variant="outlined"
-                    value={userInput}
-                    onChange={(e) => {
-                      setUserInput(e.target.value);
-                      setVerificationError(false);
-                    }}
-                    error={verificationError}
-                    helperText={verificationError ? "That answer does not match the statement, please try again." : ""}
-                    sx={{ mt: 0 }}
-                  />
-                </>
-              ) : (
-                <Box sx={{ minHeight: '400px' }}>
-                  <MultipleChoiceQuestion
-                    question={statements[currentTest - 1]}
-                    choices={multipleChoiceData.choices}
-                    correctAnswerIndex={multipleChoiceData.correctAnswerIndex}
-                    onCorrectAnswer={handleMultipleChoiceCorrect}
-                    onIncorrectAnswer={handleMultipleChoiceIncorrect}
-                  />
-                </Box>
-              )}
-            </>
-          )}
-          {allTestsPassed && (
-            <Alert severity="success" sx={{ mt: 2 }}>
-              Congratulations! You have completed all verification tests.
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={handleClose} color="primary">
-            Close
-          </Button>
-          {currentTest === 1 && !allTestsPassed && (
-            <Button 
-              onClick={handleSubmit} 
-              color="primary" 
-              variant="contained"
-              disabled={loading || !userInput}
-            >
-              {loading ? 'Checking...' : 'Submit'}
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+          Begin Test
+        </Button>
+      </Box>
     </Box>
   );
 }
