@@ -31,9 +31,8 @@ const ThemeInput = ({ onThemeGenerated }) => {
         // 调用 onThemeGenerated 但不在此处等待其完成
         // 让它在后台处理，包括MCQ加载
         // 我们需要捕获这个promise可能发生的错误，以防止未处理的promise拒绝
-        onThemeGenerated(response.data).catch(error => {
-          console.error("Error during background theme processing in onThemeGenerated:", error);
-          // 根据应用需求，这里可以添加用户提示或更新全局错误状态
+        onThemeGenerated(response.data).finally(() => {
+          setIsLoading(false);
         });
       }
     } catch (error) {
@@ -42,8 +41,6 @@ const ThemeInput = ({ onThemeGenerated }) => {
       // 如果 onThemeGenerated 未被调用或早期失败，可能需要在这里重置App.js中的某些状态
       // 但目前 onThemeGenerated 内部有自己的错误处理和状态重置逻辑
     } finally {
-      // isLoading 现在会在 axios.post 完成后（而不是 onThemeGenerated 完成后）设置为 false
-      setIsLoading(false);
     }
   };
 

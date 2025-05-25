@@ -69,7 +69,6 @@ function App() {
       setTotalQuestions(runnableTestsCount);
 
       setStatements(originalStatements);
-      setSampleContent(content); // Enables the button via disabled={!sampleContent}
 
       // Determine potential number of tests based on statements
       const numPotentialTests = originalStatements.length < 3 ? originalStatements.length : 3;
@@ -102,6 +101,8 @@ function App() {
       }
       
       setPreloadedMCQs(newPreloadedMCQs);
+      
+      setSampleContent(content); // Enables the button via disabled={!sampleContent}
 
       
     } catch (error) {
