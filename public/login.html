@@ -27,19 +27,17 @@
             <div class="container">
                 <div class="form">
                     <h2>登录</h2>
-                    <form action="/" method="get">
+                    <form id="loginForm">
                         <div class="inputBox">
-                            <input type="text" placeholder="用户">
-
+                            <input type="text" id="username" name="username" placeholder="用户" required>
                         </div>
                         <div class="inputBox">
-                            <input type="password" placeholder="密码">
-
+                            <input type="password" id="password" name="password" placeholder="密码" required>
                         </div>
                         <div class="inputBox">
                             <input type="submit" value="登录">
-
                         </div>
+                        <div id="message" style="margin-top: 10px; text-align: center; color: red;"></div>
                         <p class="forget">忘记密码?<a href="#">
                                 点击这里
                             </a></p>
@@ -51,6 +49,101 @@
             </div>
         </div>
     </section>
+
+    <script>
+        function getCookieValue(name) {
+  const cookies = document.cookie.split(';');
+  for (let i = 0; i < cookies.length; i++) {
+    let cookie = cookies[i].trim();
+    // Does this cookie string begin with the name we want?
+    if (cookie.startsWith(name + '=')) {
+      return cookie.substring(name.length + 1);
+    }
+  }
+
+  // If cookie not found, generate a new one, set it, and return it.
+  if (name === 'session_id') {
+    const newSessionId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
+    // Set the cookie to expire in 7 days, adjust as needed
+    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `${name}=${newSessionId}; expires=${expires}; path=/`;
+    return newSessionId;
+  }
+
+  return ''; // Return empty string if other cookies not found
+} 
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const messageDiv = document.getElementById('message');
+
+            const username = usernameInput.value;
+            const password = passwordInput.value;
+
+            messageDiv.textContent = '';
+            messageDiv.style.color = 'red';
+
+            try {
+                const response = await fetch('http://server.tsxc.xyz:8000/api/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, session_id: getCookieValue('session_id') })
+                });
+
+                if (response.ok) {
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (e) {
+                        const textResponse = await response.text();
+                        if (textResponse.toLowerCase() === 'true') {
+                            result = true;
+                        } else {
+                            messageDiv.textContent = '登录成功，但响应格式未知。';
+                            console.log('Login successful, but unknown response format:', textResponse);
+                            return;
+                        }
+                    }
+                    
+
+                    if (result === true) {
+                        messageDiv.textContent = '登录成功！';
+                        messageDiv.style.color = 'green';
+                        location.assign('/');
+                    } else {
+                        const errorText = (typeof result === 'object' && result !== null && result.message) ? result.message : '登录失败，无效的凭据或服务器错误。';
+                        messageDiv.textContent = errorText;
+                    }
+                } else {
+                    let errorText = `登录认证失败 (${response.status})`;
+                    try {
+                        const errorResult = await response.json();
+                        if (errorResult && errorResult.detail) {
+                            errorText = `登录失败: ${errorResult.detail}`;
+                        } else if (errorResult && errorResult.message) {
+                            errorText = `登录失败: ${errorResult.message}`;
+                        } else if (response.status === 401) {
+                            errorText = '登录失败：用户名或密码错误。';
+                        } else if (response.status === 400) {
+                            errorText = '登录失败：请求数据无效。';
+                        }
+                    } catch (e) {
+                        if (response.status === 401) {
+                             errorText = '登录失败：用户名或密码错误。';
+                        }
+                    }
+                    messageDiv.textContent = errorText;
+                }
+            } catch (error) {
+                console.error('登录请求发生错误:', error);
+                messageDiv.textContent = '登录请求无法发送，请检查网络连接或稍后重试。';
+            }
+        });
+    </script>
 </body>
 
 </html>
