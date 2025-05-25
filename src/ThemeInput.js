@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -13,75 +13,50 @@ export var SAMPLE_CONTENT = "亲爱的用户，欢迎您使用DeepSeek产品及�
 const ThemeInput = ({ onThemeGenerated }) => {
   const [theme, setTheme] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingDots, setLoadingDots] = useState('.');
 
-  const handleThemeSubmit = async () => {
-    if (!theme || isLoading) return;
-    
-    setIsLoading(true);
-    try {
-      const response = await axios.post('http://server.tsxc.xyz:8000/api/questions/', {
-        message_request: theme,
-        message_content: SAMPLE_CONTENT,
-        session_id: getCookieValue('session_id')
-      });
-      
-      if (response.data) {
-        // 调用 onThemeGenerated 但不在此处等待其完成
-        // 让它在后台处理，包括MCQ加载
-        // 我们需要捕获这个promise可能发生的错误，以防止未处理的promise拒绝
-        onThemeGenerated(response.data).finally(() => {
-          setIsLoading(false);
-        });
-      }
-    } catch (error) {
-      // 这个 catch 主要捕获 axios.post 本身的错误
-      console.error('Error generating theme content (axios.post):', error);
-      // 如果 onThemeGenerated 未被调用或早期失败，可能需要在这里重置App.js中的某些状态
-      // 但目前 onThemeGenerated 内部有自己的错误处理和状态重置逻辑
-    } finally {
+  useEffect(() => {
+    let interval;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setLoadingDots(dots => dots.length >= 3 ? '.' : dots + '.');
+      }, 500);
+    } else {
+      setLoadingDots('.');
     }
-  };
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   return (
-    <Box sx={{ 
-      display: 'flex',
-      alignItems: 'center',
-      gap: 2,
-      flex: 1
-    }}>
-      <TextField
-        placeholder="Enter a theme of terms you would like to read to begin the test..."
-        value={theme}
-        onChange={(e) => setTheme(e.target.value)}
-        variant="standard"
-        size="medium"
-        sx={{ 
-          flex: 1,
-          '& .MuiInput-root': {
-            fontSize: '1.1rem',
-            '&:before, &:after': {
-              display: 'none'
-            }
+    <TextField
+      placeholder="Enter a theme of terms you would like to read to begin the test..."
+      value={theme}
+      onChange={(e) => {
+        setTheme(e.target.value);
+        onThemeGenerated({ theme: e.target.value, isLoading });
+      }}
+      variant="outlined"
+      size="small"
+      fullWidth
+      sx={{ 
+        '& .MuiOutlinedInput-root': {
+          fontSize: '1rem',
+          backgroundColor: '#ffffff',
+          '& fieldset': {
+            borderColor: 'rgba(0,0,0,0.23)',
+            borderWidth: '1.5px'
           },
-          '& .MuiInput-input': {
-            padding: '8px 0'
+          '&:hover fieldset': {
+            borderColor: 'rgba(0,0,0,0.35)'
+          },
+          '&.Mui-focused fieldset': {
+            borderColor: '#1976d2',
+            borderWidth: '2px'
           }
-        }}
-        disabled={isLoading}
-      />
-      <Button
-        variant="contained"
-        onClick={handleThemeSubmit}
-        disabled={!theme || isLoading}
-        sx={{ 
-          width: '150px',
-          height: '36px',
-          fontSize: '0.9rem'
-        }}
-      >
-        {isLoading ? 'Loading...' : 'Set Theme'}
-      </Button>
-    </Box>
+        }
+      }}
+      disabled={isLoading}
+    />
   );
 };
 
