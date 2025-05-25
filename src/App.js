@@ -38,11 +38,9 @@ function App() {
 
   const loadMultipleChoiceQuestion = async (statement) => {
     try {
-      const response = await axios.post('http://server.tsxc.xyz:8000/api/get_mcq/', null, {
-        params: {
-          question: statement,
-          session_id: getCookieValue('session_id')
-        }
+      const response = await axios.post('http://server.tsxc.xyz:8000/api/get_mcq/', {
+        question: statement,
+        session_id: getCookieValue('session_id')
       });
       
       const result = JSON.parse(response.data);
@@ -147,14 +145,12 @@ function App() {
     setVerificationError(false);
     
     try {
-      const response = await axios.post('http://server.tsxc.xyz:8000/api/judge_answer/', null, {
-        params: {
-          question: JSON.stringify({original_statements: statements}),
-          answer: JSON.stringify({
+      const response = await axios.post('http://server.tsxc.xyz:8000/api/judge_answer/', {
+        question: JSON.stringify({original_statements: statements}),
+        answer: JSON.stringify({
             user_paraphrase: userInput
           }),
-          session_id: getCookieValue('session_id')
-        }
+        session_id: getCookieValue('session_id')
       });
 
       // Wait for MCQloading to be false

@@ -19,12 +19,10 @@ const ThemeInput = ({ onThemeGenerated }) => {
     
     setIsLoading(true);
     try {
-      const response = await axios.post('http://server.tsxc.xyz:8000/api/questions/', null, {
-        params: {
-          message_request: theme,
-          message_content: SAMPLE_CONTENT,
-          session_id: getCookieValue('session_id')
-        }
+      const response = await axios.post('http://server.tsxc.xyz:8000/api/questions/', {
+        message_request: theme,
+        message_content: SAMPLE_CONTENT,
+        session_id: getCookieValue('session_id')
       });
       
       if (response.data) {
