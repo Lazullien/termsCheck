@@ -17,7 +17,7 @@ import ThemeInput from './ThemeInput';
 import TermsDisplay from './TermsDisplay';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import { getCookieValue } from './utils';
-import SAMPLE_CONTENT from './ThemeInput.js';
+import {SAMPLE_CONTENT} from './ThemeInput.js';
 
 function App() {
   const [open, setOpen] = useState(false);
