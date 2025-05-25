@@ -17,7 +17,7 @@ import ThemeInput from './ThemeInput';
 import TermsDisplay from './TermsDisplay';
 import MultipleChoiceQuestion from './MultipleChoiceQuestion';
 import { getCookieValue } from './utils';
-import {SAMPLE_CONTENT} from './ThemeInput.js';
+// import {SAMPLE_CONTENT} from './ThemeInput.js';
 
 function App() {
   const [open, setOpen] = useState(false);
@@ -236,7 +236,7 @@ function App() {
           Please read the following terms and answer questions:
         </Typography>
 
-        <TermsDisplay content={SAMPLE_CONTENT} />
+        {/* <TermsDisplay content={SAMPLE_CONTENT} /> */}
         
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 'auto' }}>
           <ThemeInput onThemeGenerated={handleThemeGenerated} />
